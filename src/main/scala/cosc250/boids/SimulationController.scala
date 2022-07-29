@@ -1,7 +1,6 @@
 package cosc250.boids
 
-/**
-  * We've kept mutation in the simulation just in this top-level object.
+/** We've kept mutation in the simulation just in this top-level object.
   */
 object SimulationController {
 
@@ -21,60 +20,68 @@ object SimulationController {
   val windStrength = 0.03
 
   /** The wind -- an optional acceleration vector */
-  var wind:Option[Vec2] = None
+  var wind: Option[Vec2] = None
 
-  /**
-    * Sets a wind blowing at windStrength, at this angle.
-    * Note that a northerly wind blows **from** the north, so we multiply the vector by -1.
+  /** Sets a wind blowing at windStrength, at this angle. Note that a northerly
+    * wind blows **from** the north, so we multiply the vector by -1.
     */
-  def setWindDirection(theta:Double):Unit = {
-    ???
+  def setWindDirection(theta: Double): Unit = {
+    wind = Some(Vec2.fromRTheta(windStrength, theta) * -1)
+    Vec2.fromRTheta(windStrength, theta)
   }
 
   /** A container that can hold a boid to add on the next frame */
-  var insertBoid:Option[Boid] = None
+  var insertBoid: Option[Boid] = None
 
-  /**
-    * A function that will run for the next frame only over each boid in the system,
-    * producing an acceleration vector to add to a Boid
+  /** A function that will run for the next frame only over each boid in the
+    * system, producing an acceleration vector to add to a Boid
     */
-  var oneTimeFunction:Option[Boid => Vec2] = None
+  var oneTimeFunction: Option[Boid => Vec2] = None
 
-  /**
-    * Resets the events that should occur one time only
+  /** Resets the events that should occur one time only
     */
-  def resetOneTimeEvents():Unit = {
-    ???
+  def resetOneTimeEvents(): Unit = {
+    oneTimeFunction = None
   }
 
-  /**
-    * A queue containing the last `frameMemory frames`.
-    * We're using an immutable queue, but we've put it in a var, given that this controller is mutable.
+  /** A queue containing the last `frameMemory frames`. We're using an immutable
+    * queue, but we've put it in a var, given that this controller is mutable.
     */
-  var frameMemory = FrameMemory(SimulationFrame.explosionOfBoids(numBoids), frameMemoryLength)
+  var frameMemory =
+    FrameMemory(SimulationFrame.explosionOfBoids(numBoids), frameMemoryLength)
 
   /** The current frame */
-  def current:SimulationFrame = ???
+  def current: SimulationFrame = frameMemory.currentFrame
 
-  /** Called by a click to the canvas, to say that in the next frame, a boid should be inserted */
-  def pushBoid(b:Boid):Unit = {
+  /** Called by a click to the canvas, to say that in the next frame, a boid
+    * should be inserted
+    */
+  def pushBoid(b: Boid): Unit = {
     insertBoid = Some(b)
   }
 
   /** Called by the Action Replay button to jump back in the memory buffer */
-  def resetQueue():Seq[Boid] = {
+  def resetQueue(): Seq[Boid] = {
     ???
+    // var frame = frameMemory.oldestFrame
+    // frame
+    // pushFrame(frameMemory.oldestFrame)
   }
 
   /** Progress to the next frame in the simulation */
-  def update():Unit = {
-    ???
+  def update(): Unit = {
+    return pushFrame(
+      current.nextFrame(
+        wind.getOrElse(Vec2(0, 0)).limit(windStrength),
+        oneTimeFunction
+      )
+    )
   }
 
   /** Force the simulation to use this as the next frame */
-  def pushFrame(frame:SimulationFrame):Unit = {
-    ???
+  def pushFrame(frame: SimulationFrame): Unit = {
+    frameMemory = frameMemory.pushFrame(frame)
+    return frameMemory
   }
-
 
 }

@@ -6,6 +6,7 @@ package cosc250.boids
   *
   * https://processing.org/examples/flocking.html
   */
+import scala.math._
 case class Boid(
   position:Vec2, velocity:Vec2
 ) {
@@ -16,7 +17,10 @@ case class Boid(
     * This steer is limited to maxForce
     */
   def separate(others:Seq[Boid]):Vec2 = {
-    ???
+    val sep = Vec2(others.closeTo(this.position, Boid.neighBourDist).map(x2 =>  this.position.x - x2.position.x).sum / others.size,
+    others.closeTo(this.position, Boid.neighBourDist).map(y2 => this.position.y - y2.position.y).sum / others.size)
+  //separated into variable to make more readable, sep is variable that is this.pos - others.sum/others.size 
+    return sep.limit(Boid.maxForce)
   }
 
   /**
@@ -25,7 +29,7 @@ case class Boid(
     * This alignment force is limited to maxForce
     */
   def align(others:Seq[Boid]):Vec2 = {
-    ???
+    return ((others.closeTo(this.position, Boid.neighBourDist).averageVelocity) - this.velocity).limit(Boid.maxForce)
   }
 
   /**
@@ -33,7 +37,7 @@ case class Boid(
     * The steer is limited to maxForce
     */
   def seek(targetPos:Vec2):Vec2 = {
-    ???
+    return (((this.position - targetPos).normalised*Boid.maxSpeed) - this.velocity).limit(Boid.maxForce)
   }
 
 
@@ -42,7 +46,8 @@ case class Boid(
     * the flock cohesion
     */
   def cohesion(others:Seq[Boid]):Vec2 = {
-    ???
+    //cohesion is vector from current boid to other boids
+    return ((others.closeTo(this.position, Boid.neighBourDist).centroid) - this.position - this.velocity).limit(Boid.maxForce)
   }
 
 
@@ -51,7 +56,7 @@ case class Boid(
     * align, and cohesion acceleration vectors.
     */
   def flock(others:Seq[Boid]):Vec2 = {
-    ???
+    return (cohesion(others) * 0.8 + align(others)  + separate(others) * 1.5)
   }
 
   /**
@@ -68,8 +73,11 @@ case class Boid(
     * *before* we add the influence of the wind to the boid's velocity -- it's possible
     * to fly faster downwind than upwind.
     */
-  def update(acceleration:Vec2, wind:Vec2):Boid = {
-    ???
+  def update(acceleration:Vec2, wind:Vec2):Boid = { 
+    return Boid((Vec2(wrapX(this.position.x), wrapY(this.position.y)) + this.velocity),(this.velocity + acceleration).limit(Boid.maxSpeed) + wind)
+    //return new boid with updated position and veloctiy
+
+    
   }
 
   def wrapX(x:Double):Double = {
@@ -112,26 +120,35 @@ object Boid {
  * Defining these extension methods might make your work in the Boids algorithms cleaner.
  */
 extension (boids:Seq[Boid]) {
-
   /**
     * Returns only those boids within d distance of position p
     * align, separate, and cohesion all want to consider boids within a certain range.
     */
-  def closeTo(p:Vec2, d:Double):Seq[Boid] =
-    ???
+  def closeTo(p:Vec2, d:Double):Seq[Boid] ={
+          boids.filter(_.position.distance(p) < d)
+  }
 
   /**
     * Calculates the centroid of a group of boids.
     * Cohesion asks a boid to steer towards the centroid of the boids within a certain distance
     */
   def centroid:Vec2 =
-    ???
+    {
+      //take all boids, find the mean position.
+      Vec2((boids.map(_.position).map(_._1)).sum/(boids.map(_.position).map(_._1)).size,
+      (boids.map(_.position).map(_._2)).sum/(boids.map(_.position).map(_._2)).size)
+    
+    }
 
   /**
     * Calculates the average velocity vector (add them up and divide by the number in the group) of a group of boids
     * Align asks a boid to steer so it will align more with its neighbours' average velocity vector
     */
   def averageVelocity:Vec2 =
-    ???
+    {
+    Vec2((boids.map(_.velocity).map(_._1)).sum/(boids.map(_.velocity).map(_._1)).size,
+      (boids.map(_.velocity).map(_._2)).sum/(boids.map(_.velocity).map(_._2)).size)
+    
+  }
 
 }

@@ -97,7 +97,7 @@ Partially implemented, you have:
 ## What the components need to do
 
 * The **Action Replay** button must take the simulation back to the oldest frame in  
-  the memory buffer (typically one second) and let the simulation continue 
+  the memory buffer (typically   second) and let the simulation continue 
   again from there.  
   Hint: think about which end you want to insert the frame.
   
